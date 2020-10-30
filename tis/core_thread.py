@@ -72,7 +72,7 @@ class MUV_up(Thread):
                 
                 # Sending sensor values
 
-                payload = self.thing.read(self.topic[i])
+                payload = self.thing.read(self.topic)
                 self.rf_sc.publish(self.thing.topic, payload)
                 print(payload)
                     
