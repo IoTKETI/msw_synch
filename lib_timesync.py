@@ -82,9 +82,8 @@ if __name__ == '__main__':
     monitor.threshold = 5               # Offset threshold for synchronization (millisecond)
 
     # Define resource
-    container_name = lib["data"]
-    print(type(lib['name']))
-    monitor.topic = '/MUV/data/' + my_lib_name + '/' + container_name
+    container_name = lib["data"][0]
+    monitor.topic = '/MUV/data/' + lib["name"] + '/' + container_name
 
     # TAS thread
     msw_mqtt_connect(broker_ip, port)
