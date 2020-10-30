@@ -3,6 +3,7 @@ from tis.oneM2M import *
 from socket import *
 from device.synch import *
 import paho.mqtt.client as mqtt
+import os
 
 global lib_topic
 global lib_mqtt_client
@@ -54,6 +55,8 @@ def send_data_to_msw (data_topic, obj_data):
 
 
 if __name__ == '__main__':
+
+    os.system('sudo systemctl disable systemd-timesynch.service')
     my_lib_name = 'lib_timesync'
 
     lib = dict()
@@ -88,10 +91,3 @@ if __name__ == '__main__':
     # TAS thread
     msw_mqtt_connect(broker_ip, port)
     monitor_tis = MUV_TIS(monitor, lib_mqtt_client).start()
-
-    
-
-        
-
-
-
