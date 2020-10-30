@@ -18,7 +18,7 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 
-var my_msw_name = 'msw_sparrow_air';
+var my_msw_name = 'msw_timesync';
 
 var fc = {};
 var config = {};
@@ -44,17 +44,17 @@ catch (e) {
 // library 추가
 var add_lib = {};
 try {
-    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_sparrow_air.json', 'utf8'));
+    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_timesync.json', 'utf8'));
     config.lib.push(add_lib);
 }
 catch (e) {
     add_lib = {
-        name: 'lib_sparrow_air',
+        name: 'lib_timesync',
         target: 'armv6',
-        description: "[name] [portnum] [baudrate]",
-        scripts: './lib_sparrow_air /dev/ttyUSB4 115200',
-        data: ['AIR'],
-        control: ['Control_AIR']
+        description: "[name]",
+        scripts: './lib_timesync',
+        data: ['TimeSync'],
+        control: ['']
     };
     config.lib.push(add_lib);
 }
@@ -111,7 +111,7 @@ function runLib(obj_lib) {
         }
 
         var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        // var run_lib = spawn('python3', ['./' + config.directory_name + '/lib_sparrow_air.py', '/dev/ttyUSB4', 115200]);
+        // var run_lib = spawn('python3', ['./' + config.directory_name + '/lib_timesync.py', '/dev/ttyUSB4', 115200]);
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
