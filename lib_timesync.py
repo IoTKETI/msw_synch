@@ -5,7 +5,7 @@ from device.synch import *
 import paho.mqtt.client as mqtt
 
 global lib_topic
-global lib_mqtt_client\
+global lib_mqtt_client
 
 
 
