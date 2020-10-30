@@ -72,8 +72,10 @@ class MUV_up(Thread):
                 # Update delay (second)
                 time.sleep(self.interval)
                 
+                print('loop')
                 # Sending sensor values
                 for i in range(0, len(self.topic)):
+                    
                     payload = self.thing.read(self.topic[i])
                     self.rf_sc.publish(self.thing.topic, payload)
                     print(payload)
