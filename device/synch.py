@@ -23,9 +23,9 @@ class Monitor(Thing):
         # OS address bit check
         (os_bit, _) = platform.architecture()
         if os_bit == '32bit':
-            self.client_sw = './linux_client_x86'
+            self.client_sw = './msw_timesync_msw_timesync/device/linux_client_x86'
         elif os_bit == '64bit':
-            self.client_sw = './linux_client_x64'
+            self.client_sw = './msw_timesync_msw_timesync/device/linux_client_x64'
 
         # Change of ownership
         subprocess.call(['sudo', 'chmod', '777', self.client_sw])
