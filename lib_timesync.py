@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     # Define resource
     container_name = lib["data"]
-    print(lib['name'])
+    print(type(lib['name']))
     monitor.topic = '/MUV/data/' + lib["name"] + '/' + container_name
 
     # TAS thread
