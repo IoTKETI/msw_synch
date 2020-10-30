@@ -84,7 +84,7 @@ if __name__ == '__main__':
     # Define resource
     container_name = lib["data"]
     print(type(lib['name']))
-    monitor.topic = '/MUV/data/' + lib["name"] + '/' + container_name
+    monitor.topic = '/MUV/data/' + my_lib_name + '/' + container_name
 
     # TAS thread
     msw_mqtt_connect(broker_ip, port)
