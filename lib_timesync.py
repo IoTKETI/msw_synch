@@ -66,6 +66,10 @@ if __name__ == '__main__':
     lib = json.dumps(lib, indent=4)
     lib = json.loads(lib)
 
+    with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+                json.dump(lib, json_file, indent=4)
+
+
     broker_ip = 'localhost'
     port = 1883
 
