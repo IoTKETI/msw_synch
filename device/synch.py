@@ -1,6 +1,7 @@
 from tis.oneM2M import *
 import subprocess
 import platform
+import json
 # Warning!! In each class, one must implement only one method among get and control methods
 
 
@@ -43,6 +44,15 @@ class Monitor(Thing):
             
             # Time offset calculation
             offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
+            data_temp = offset.split('+')
+            payload = dict()
+            payload['server'] = data_temp[0]
+            payload['mc_time'] = data_temp[1]
+            payload['mc_offset'] = data_temp[2]
+            payload['fc_time'] = data_temp[1]
+            payload['fc_offset'] = data_temp[2]
+            payload = json.dumps(payload, indent=4)
+            payload = json.loads(payload)
 
             # Time offset check
             if abs(float(offset)) > float(self.threshold):
@@ -52,7 +62,7 @@ class Monitor(Thing):
                 print('Synchronizer is excuted')
 
             # Return the calculated time offset
-            return offset
+            return payload
 
         else :
             pass
