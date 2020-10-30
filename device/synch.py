@@ -55,7 +55,7 @@ class Monitor(Thing):
             payload = json.loads(payload)
 
             # Time offset check
-            if abs(float(offset)) > float(self.threshold):
+            if abs(float(data_temp[2])) > float(self.threshold):
 
                 # Excute synchronizer
                 subprocess.call([self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
