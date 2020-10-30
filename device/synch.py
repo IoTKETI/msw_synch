@@ -45,7 +45,7 @@ class Monitor(Thing):
             offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
 
             # Time offset check
-            if float(offset) > float(self.threshold):
+            if abs(float(offset)) > float(self.threshold):
 
                 # Excute synchronizer
                 subprocess.call([self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
