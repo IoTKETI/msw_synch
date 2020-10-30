@@ -56,10 +56,10 @@ class MUV_up(Thread):
         
         
     def run(self):
-        
+        print('start MUV_UP')
         # Data transmission
         while True:
-            
+            print('muv_up loop')
             try:
                 
                 if len(self.topic) == 0:
