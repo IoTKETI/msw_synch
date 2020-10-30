@@ -52,7 +52,7 @@ class Monitor(Thing):
             payload['fc_time'] = data_temp[1]
             payload['fc_offset'] = data_temp[2]
             payload = json.dumps(payload, indent=4)
-            payload = json.loads(payload)
+#             payload = json.loads(payload)
 
             # Time offset check
             if abs(float(data_temp[2])) > float(self.threshold):
