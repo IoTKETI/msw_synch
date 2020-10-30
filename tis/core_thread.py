@@ -200,6 +200,3 @@ class Server_thread(Thread):
                 # Close all ports
                 self.rf_sc.close()
                 self.sc.close()
-                
- 
-    

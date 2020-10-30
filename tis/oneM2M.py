@@ -17,7 +17,7 @@ class TIS(Thread):
         # ================== communication and routine ======================
 
         try:
-            print('onem2m run')
+            
             # Initialization for threads
             threads = []
             
