@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Inforamtion for time server
     monitor = Monitor()
-    monitor.server_addr = 'flws.iptime.org'
+    monitor.server_addr = '203.253.128.177'
     monitor.server_port = '5005'
     monitor.interval = 1                # Interval for offset report to Mobius (second)
     monitor.threshold = 5               # Offset threshold for synchronization (millisecond)
