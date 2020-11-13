@@ -57,6 +57,7 @@ def send_data_to_msw (data_topic, obj_data):
 if __name__ == '__main__':
 
     os.system('sudo systemctl disable systemd-timesynch.service')
+    os.system('sudo timedatectl set-ntp off')
     my_lib_name = 'lib_timesync'
 
     lib = dict()
