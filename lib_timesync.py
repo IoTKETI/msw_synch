@@ -85,7 +85,7 @@ if __name__ == '__main__':
     monitor.server_port = '5005'
     monitor.interval = 1                # Interval for offset report to Mobius (second)
     monitor.threshold = 5               # Offset threshold for synchronization (millisecond)
-    monitor.trans_protocol = 'tcp'
+    monitor.trans_protocol = 'udp'
 
     # Define resource
     container_name = lib["data"][0]
