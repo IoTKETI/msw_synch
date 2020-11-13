@@ -17,7 +17,7 @@ class Monitor(Thing):
         self.name = 'Monitor'
         self.server_addr = ''
         self.server_port = ''
-        self.trans_protocol = 'udp'
+        self.trans_protocol = 'tcp'
         self.threshold = 5
         self.synch_process = []
 
