@@ -232,11 +232,11 @@ setTimeout(init, 1000);
 function parseDataMission(topic, str_message) {
     try {
         // User define Code
-        var obj_lib_data = JSON.parse(str_message);
-        if(fc.hasOwnProperty('global_position_int')) {
-            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-        str_message = JSON.stringify(obj_lib_data);
+//         var obj_lib_data = JSON.parse(str_message);
+//         if(fc.hasOwnProperty('global_position_int')) {
+//             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
+//         }
+//         str_message = JSON.stringify(obj_lib_data);
 
         ///////////////////////////////////////////////////////////////////////
 
