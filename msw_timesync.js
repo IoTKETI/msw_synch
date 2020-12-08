@@ -51,8 +51,8 @@ catch (e) {
     add_lib = {
         name: 'lib_timesync',
         target: 'armv6',
-        description: "[name]",
-        scripts: './lib_timesync',
+        description: '[name] [server ip] [interval] [protocol] [threshold] [server port]',
+        scripts: './lib_timesync 203.253.128.177 1 udp 5 5005',
         data: ['TimeSync'],
         control: ['']
     };
