@@ -58,7 +58,7 @@ if __name__ == '__main__':
     #os.system('sudo systemctl disable systemd-timesynch.service')
     os.system('sudo timedatectl set-ntp off')
     my_lib_name = 'lib_timesync'
-    print (os.curdir())
+
     try:
         lib = dict()
         with open(my_lib_name + '.json', 'r') as f:
