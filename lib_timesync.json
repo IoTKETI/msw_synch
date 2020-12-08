@@ -1,0 +1,8 @@
+{
+  "name": "lib_timesync",
+  "target": "armv6",
+  "description": "[name]",
+  "scripts": "./lib_timesync",
+  "data": ["TimeSync"],
+  "control": [""]
+}
