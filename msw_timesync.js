@@ -110,8 +110,10 @@ function runLib(obj_lib) {
             scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
         }
 
-        // var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        var run_lib = spawn('python3', [scripts_arr[0] + '.py', scripts_arr[1], scripts_arr[2], scripts_arr[3], scripts_arr[4], scripts_arr[5]]);
+        scripts_arr[0] = scripts_arr[0] + '.py';
+        scripts_arr.unshift('python3');
+        // var run_lib = spawn('sudo', scripts_arr);
+        var run_lib = spawn('sudo', scripts_arr);
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
@@ -124,7 +126,7 @@ function runLib(obj_lib) {
 
         run_lib.on('exit', function(code) {
             console.log('exit: ' + code);
-            // setTimeout(run_lib, 3000, obj_lib);
+            setTimeout(run_lib, 3000, obj_lib);
         });
 
         run_lib.on('error', function(code) {
