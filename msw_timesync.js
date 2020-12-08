@@ -112,7 +112,7 @@ function runLib(obj_lib) {
 
         scripts_arr[0] = scripts_arr[0] + '.py';
         scripts_arr.unshift('python3');
-        // var run_lib = spawn('sudo', scripts_arr);
+
         var run_lib = spawn('sudo', scripts_arr);
 
         run_lib.stdout.on('data', function(data) {
