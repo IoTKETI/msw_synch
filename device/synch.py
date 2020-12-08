@@ -1,6 +1,6 @@
 from tis.oneM2M import *
 from datetime import datetime as dt
-from datetime import timezone, timedelta
+from pytz import timezone
 import os
 import subprocess
 import platform
@@ -23,7 +23,6 @@ class Monitor(Thing):
         self.trans_protocol = 'udp'
         self.threshold = 5
         self.synch_process = []
-        self.tz = timezone(timedelta(hours = 9))
         self.ct_path = ''
 
         # client path check
@@ -73,18 +72,15 @@ class Monitor(Thing):
             print(data_temp)
             
             payload = dict()
-            payload['server'] = dt.fromtimestamp( float( data_temp[0] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['server'] = dt.fromtimestamp( float( data_temp[0] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
             payload['mc_offset'] = int( data_temp[2] )
-            payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
             payload['fc_offset'] = int( data_temp[2] )
-
-
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
             if abs(float(data_temp[2])) > float(self.threshold):
-
                 # Excute synchronizer
                 subprocess.call([self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
                 print('Synchronizer is excuted')
