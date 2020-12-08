@@ -59,18 +59,25 @@ if __name__ == '__main__':
     os.system('sudo timedatectl set-ntp off')
     my_lib_name = 'lib_timesync'
 
-    lib = dict()
-    lib["name"] = my_lib_name
-    lib["target"] = ''
-    lib["description"] = ""
-    lib["scripts"] = ''
-    lib["data"] = ['TimeSync']
-    lib["control"] = ['']
-    lib = json.dumps(lib, indent=4)
-    lib = json.loads(lib)
+    try:
+        lib = dict()
+        with open(my_lib_name + '.json', 'r') as f:
+            lib = json.load(f)
+            lib = json.loads(lib)
 
-    with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
-                json.dump(lib, json_file, indent=4)
+    except:
+        lib = dict()
+        lib["name"] = my_lib_name
+        lib["target"] = 'armv6'
+        lib["description"] = '[name] [server ip] [interval] [protocol] [threshold] [server port]'
+        lib["scripts"] = './lib_timesync 203.253.128.177 1 udp 5 5005'
+        lib["data"] = ['TimeSync']
+        lib["control"] = ['']
+        lib = json.dumps(lib, indent=4)
+        lib = json.loads(lib)
+
+        with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+            json.dump(lib, json_file, indent=4)
 
 
     broker_ip = 'localhost'
