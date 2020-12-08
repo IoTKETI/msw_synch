@@ -3,12 +3,12 @@ from tis.oneM2M import *
 from socket import *
 from device.synch import *
 import paho.mqtt.client as mqtt
-import os
+import os, sys
 
 global lib_topic
 global lib_mqtt_client
 
-
+argv = sys.argv
 
 def on_connect(client,userdata,flags, rc):
     print('[msw_mqtt_connect] connect to ', broker_ip)
@@ -27,7 +27,6 @@ def on_subscribe(client, userdata, mid, granted_qos):
 
 def on_message(client, userdata, msg):
     global missionPort
-
     message = str(msg.payload.decode("utf-8"))
 
 
@@ -56,7 +55,7 @@ def send_data_to_msw (data_topic, obj_data):
 
 if __name__ == '__main__':
 
-    os.system('sudo systemctl disable systemd-timesynch.service')
+    #os.system('sudo systemctl disable systemd-timesynch.service')
     os.system('sudo timedatectl set-ntp off')
     my_lib_name = 'lib_timesync'
 
@@ -77,15 +76,27 @@ if __name__ == '__main__':
     broker_ip = 'localhost'
     port = 1883
 
-
     # Inforamtion for time server
     monitor = Monitor()
-    monitor.server_addr = '203.253.128.177'
-#     monitor.server_addr = 'flws.iptime.org'
-    monitor.server_port = '5005'
-    monitor.interval = 1                # Interval for offset report to Mobius (second)
-    monitor.threshold = 5               # Offset threshold for synchronization (millisecond)
-    monitor.trans_protocol = 'udp'
+    '''
+    예시: argv[n] = [파라미터 = default value]
+    argv[1] = [서버주소 = keti 서버]
+    argv[2] = [업로드 주기 = 1초]
+    argv[3] = [소켓 프로토콜 = udp]
+    argv[4] = [동기화 문턱 값 = 5ms]
+    argv[5] = [동기화 port = 5005]
+    '''
+    if len(argv) < 2: monitor.server_addr = '203.253.128.177'
+    else : monitor.server_addr = argv[1]
+    if len(argv) < 3: monitor.interval = 1   # Interval for offset report to Mobius (second)
+    else : monitor.interval = int( argv[2] )
+    if len(argv) < 4: monitor.trans_protocol = 'udp'
+    else : monitor.trans_protocol = argv[3]
+    if len(argv) < 5: monitor.threshold = 5  # Offset threshold for synchronization (millisecond)
+    else : monitor.threshold = int( argv[4] )    
+    if len(argv) < 6: monitor.server_port = '5005'
+    else : monitor.server_port = argv[5]
+    
 
     # Define resource
     container_name = lib["data"][0]
