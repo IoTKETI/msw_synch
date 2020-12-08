@@ -1,4 +1,7 @@
 from tis.oneM2M import *
+from datetime import datetime as dt
+from datetime import timezone, timedelta
+import os
 import subprocess
 import platform
 import json
@@ -20,13 +23,32 @@ class Monitor(Thing):
         self.trans_protocol = 'udp'
         self.threshold = 5
         self.synch_process = []
+        self.tz = timezone(timedelta(hours = 9))
+        self.ct_path = ''
+
+        # client path check
+        if os.path.exists('./linux_client_x86'):
+            self.ct_path = os.path.abspath('linux_client_x86')
+        elif os.path.exists('./device/linux_client_x86'):
+            self.ct_path = os.path.abspath('./device/linux_client_x86')
+        else:
+            for name in os.listdir('./'):
+                if name.find('_timesync') != -1:
+                    if os.path.exists('./' + name + '/linux_client_x86'):
+                        self.ct_path = os.path.abspath('./' + name + '/linux_client_x86')
+                        break
+                    elif os.path.exists('./' + name + '/device/linux_client_x86'):
+                        self.ct_path = os.path.abspath('./' + name + '/device/linux_client_x86')
+                        break
+        
+        print(self.ct_path)
 
         # OS address bit check
         (os_bit, _) = platform.architecture()
         if os_bit == '32bit':
-            self.client_sw = './msw_timesync_msw_timesync/device/linux_client_x86'
+            self.client_sw = self.ct_path[:-2] + '86'
         elif os_bit == '64bit':
-            self.client_sw = './msw_timesync_msw_timesync/device/linux_client_x64'
+            self.client_sw = self.ct_path[:-2] + '64'
 
         # Change of ownership
         subprocess.call(['sudo', 'chmod', '777', self.client_sw])
@@ -47,16 +69,18 @@ class Monitor(Thing):
             print(offset)
             
             data_temp = offset.split('+')
+            del data_temp[-1]
             print(data_temp)
             
             payload = dict()
-            payload['server'] = data_temp[0]
-            payload['mc_time'] = data_temp[1]
-            payload['mc_offset'] = data_temp[2]
-            payload['fc_time'] = data_temp[1]
-            payload['fc_offset'] = data_temp[2]
+            payload['server'] = dt.fromtimestamp( float( data_temp[0] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_offset'] = int( data_temp[2] )
+            payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), tz = self.tz).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['fc_offset'] = int( data_temp[2] )
+
+
             payload = json.dumps(payload, indent=4)
-#             payload = json.loads(payload)
 
             # Time offset check
             if abs(float(data_temp[2])) > float(self.threshold):
