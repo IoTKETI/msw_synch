@@ -1,0 +1,23 @@
+{
+  "name": "msw_timesync",
+  "version": "1.0.0",
+  "description": "MSW for timesync",
+  "main": "msw_timesync.js",
+  "dependencies": {
+    "mqtt": "^4.2.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IoTKETI/msw_timesync.git"
+  },
+  "author": "Wonseok Jung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IoTKETI/msw_timesync/issues"
+  },
+  "homepage": "https://github.com/IoTKETI/msw_timesync#readme"
+}
