@@ -24,14 +24,30 @@ var fc = {};
 var config = {};
 
 
+try {                                   // for nCube-MUV (NodeJs)
+    sortie_name = my_sortie_name
+}
+catch (e) {                             // for nCube-MUV-Python
+    var sortie_name = process.argv[2]
+}
+
 config.name = my_msw_name;
 
 try {
-    config.directory_name = msw_directory[my_msw_name];
-    config.sortie_name = '/' + my_sortie_name;
-    config.gcs = drone_info.gcs;
-    config.drone = drone_info.drone;
-    config.lib = [];
+    try {           // for nCube-MUV (NodeJs)
+        config.directory_name = msw_directory[my_msw_name];
+        config.sortie_name = '/' + sortie_name;
+        config.gcs = drone_info.gcs;
+        config.drone = drone_info.drone;
+        config.lib = [];
+    }
+    catch (e) {     // for nCube-MUV-Python
+        config.directory_name = process.argv[3];
+        config.sortie_name = '/' + sortie_name;
+        config.gcs = process.argv[4];
+        config.drone = process.argv[5];
+        config.lib = [];
+    }
 }
 catch (e) {
     config.sortie_name = '';
@@ -51,8 +67,8 @@ catch (e) {
     add_lib = {
         name: 'lib_timesync',
         target: 'armv6',
-        description: "[name]",
-        scripts: './lib_timesync',
+        description: '[name] [server ip] [interval] [protocol] [threshold] [server port]',
+        scripts: './lib_timesync 203.253.128.177 1 udp 5 5005',
         data: ['TimeSync'],
         control: ['']
     };
@@ -110,8 +126,10 @@ function runLib(obj_lib) {
             scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
         }
 
-        // var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        var run_lib = spawn('sudo', ['python3', './' + config.directory_name + '/lib_timesync.py']);
+        // scripts_arr[0] = scripts_arr[0] + '.py';
+        // scripts_arr.unshift('python3');
+
+        var run_lib = spawn('sudo', scripts_arr);
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
@@ -119,17 +137,16 @@ function runLib(obj_lib) {
 
         run_lib.stderr.on('data', function(data) {
             console.log('stderr: ' + data);
-            setTimeout(init, 1000);
+//             setTimeout(init, 1000);
         });
 
         run_lib.on('exit', function(code) {
             console.log('exit: ' + code);
-            setTimeout(init, 1000);
+            setTimeout(run_lib, 3000, obj_lib);
         });
 
         run_lib.on('error', function(code) {
             console.log('error: ' + code);
-            setTimeout(init, 1000);
         });
     }
     catch (e) {
@@ -232,18 +249,18 @@ setTimeout(init, 1000);
 function parseDataMission(topic, str_message) {
     try {
         // User define Code
-        var obj_lib_data = JSON.parse(str_message);
-        if(fc.hasOwnProperty('global_position_int')) {
-            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-        str_message = JSON.stringify(obj_lib_data);
+//         var obj_lib_data = JSON.parse(str_message);
+//         if(fc.hasOwnProperty('global_position_int')) {
+//             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
+//         }
+//         str_message = JSON.stringify(obj_lib_data);
 
         ///////////////////////////////////////////////////////////////////////
 
         var topic_arr = topic.split('/');
         var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-        msw_mqtt_client.publish(data_topic + '/' + my_sortie_name, str_message);
-//         msw_mqtt_client.publish(data_topic, str_message);
+//         msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
+        msw_mqtt_client.publish(data_topic, str_message);
     }
     catch (e) {
         console.log('[parseDataMission] data format of lib is not json');

@@ -1,8 +1,14 @@
 from tis.oneM2M import *
+<<<<<<< HEAD
 from pymavlink import mavutil
 from datetime import datetime as dt
 from pytz import timezone
 import os, threading
+=======
+from datetime import datetime as dt
+from pytz import timezone
+import os
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
 import subprocess
 import platform
 import json
@@ -23,11 +29,16 @@ class Monitor(Thing):
         self.server_port = ''
         self.trans_protocol = 'udp'
         self.threshold = 5
+<<<<<<< HEAD
         self.ct_path = ''
         self.fc_port = None
         self.fc_lt = 0
         self.fc_time = 0
         self.fc_offset = 0
+=======
+        self.synch_process = []
+        self.ct_path = ''
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
 
         # client path check
         if os.path.exists('./linux_client_x86'):
@@ -72,6 +83,7 @@ class Monitor(Thing):
             # Time offset calculation
             mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
             
+<<<<<<< HEAD
             data_temp = mc_offset.split('+')
             del data_temp[-1]
             
@@ -88,6 +100,18 @@ class Monitor(Thing):
                 payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
                 payload['fc_offset'] = self.fc_offset
 
+=======
+            data_temp = offset.split('+')
+            del data_temp[-1]
+            print(data_temp)
+            
+            payload = dict()
+            payload['server'] = dt.fromtimestamp( float( data_temp[0] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_offset'] = int( data_temp[2] )
+            payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['fc_offset'] = int( data_temp[2] )
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
