@@ -1,7 +1,14 @@
 from tis.oneM2M import *
+<<<<<<< HEAD
+from pymavlink import mavutil
+from datetime import datetime as dt
+from pytz import timezone
+import os, threading
+=======
 from datetime import datetime as dt
 from pytz import timezone
 import os
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
 import subprocess
 import platform
 import json
@@ -22,8 +29,16 @@ class Monitor(Thing):
         self.server_port = ''
         self.trans_protocol = 'udp'
         self.threshold = 5
+<<<<<<< HEAD
+        self.ct_path = ''
+        self.fc_port = None
+        self.fc_lt = 0
+        self.fc_time = 0
+        self.fc_offset = 0
+=======
         self.synch_process = []
         self.ct_path = ''
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
 
         # client path check
         if os.path.exists('./linux_client_x86'):
@@ -52,21 +67,40 @@ class Monitor(Thing):
         # Change of ownership
         subprocess.call(['sudo', 'chmod', '777', self.client_sw])
 
-        if self.trans_protocol == 'tcp':
-            self._protocol = 1
-        elif self.trans_protocol == 'udp':
-            self._protocol = 0
 
 
     # Thing dependent get function
     def get(self, key):
 
         if key in self.topic:
+
+            # protocol check
+            if self.trans_protocol == 'tcp':
+                self._protocol = 1
+            elif self.trans_protocol == 'udp':
+                self._protocol = 0
             
             # Time offset calculation
-            offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
-            print(offset)
+            mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
             
+<<<<<<< HEAD
+            data_temp = mc_offset.split('+')
+            del data_temp[-1]
+            
+            payload = dict()
+            payload['server'] = dt.fromtimestamp( float( data_temp[0] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['mc_offset'] = int( data_temp[2] )
+
+            # Check the FC connection
+            if self.fc_port == None:
+                payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+                payload['fc_offset'] = int( data_temp[2] )
+            else:
+                payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+                payload['fc_offset'] = self.fc_offset
+
+=======
             data_temp = offset.split('+')
             del data_temp[-1]
             print(data_temp)
@@ -77,16 +111,56 @@ class Monitor(Thing):
             payload['mc_offset'] = int( data_temp[2] )
             payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
             payload['fc_offset'] = int( data_temp[2] )
+>>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
             if abs(float(data_temp[2])) > float(self.threshold):
                 # Excute synchronizer
                 subprocess.call([self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-                print('Synchronizer is excuted')
+                print('Synchronizer is executed')
 
             # Return the calculated time offset
             return payload
 
         else :
             pass
+
+
+    # Function to measure RTT of the FC link
+    def rtt_measure(self):
+        
+        if self.fc_port != None:
+
+            # Interval initialize
+            self.fc_port.mav.request_data_stream_send( self.fc_port.target_system, self.fc_port.target_system, 0, 5, 1 )            
+
+            # Set FC time
+            while True:
+                self.fc_port.mav.system_time_send( int( dt.timestamp(dt.now()) * 1e6 ) , 0 )
+                msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
+                if msg.time_unix_usec > 10: break
+            
+            while True:
+
+                # Send timesync
+                tx_time = dt.timestamp(dt.now())
+                self.fc_port.mav.timesync_send(0, int( tx_time ))
+
+                # Time sync message reception
+                msg = self.fc_port.recv_match(type='TIMESYNC',blocking=True)
+                if msg.tc1 == 0:
+                    continue
+                else:
+                    rx_time = dt.timestamp(dt.now())
+                    if self.fc_lt != 0: self.fc_lt = (self.fc_lt + (rx_time - tx_time) / 2 ) / 2
+                    else: self.fc_lt = (rx_time - tx_time) / 2
+
+                # System time message reception
+                msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
+                now = float( dt.timestamp( dt.now() ) )
+                self.fc_time = float( msg.time_unix_usec / 1e6 )
+                self.fc_offset = int( ( (self.fc_time + self.fc_lt) - now ) * 1000 )
+
+        else:
+            return
