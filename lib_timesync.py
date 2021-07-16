@@ -115,16 +115,19 @@ if __name__ == '__main__':
 
     try:
         lib = dict()
+        print('./' + msw_dir_name + '/' + my_lib_name + '.json')
         with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
+            print(lib)
             lib = json.loads(lib)
+            print(lib)
 
     except:
         lib = dict()
         lib["name"] = my_lib_name
         lib["target"] = 'armv6'
         lib["description"] = "[name] [portnum] [baudrate]"
-        lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB4 115200'
+        lib["scripts"] = "./lib_timesync 203.253.128.177 1 udp 5 5005"
         lib["data"] = ['AIR']
         lib["control"] = ['Control_AIR']
         lib = json.dumps(lib, indent=4)
@@ -132,7 +135,7 @@ if __name__ == '__main__':
 
         with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
-            
+
 
     broker_ip = 'localhost'
     port = 1883
