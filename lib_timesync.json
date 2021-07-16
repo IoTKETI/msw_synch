@@ -2,12 +2,12 @@
     "name": "lib_timesync",
     "target": "armv6",
     "description": "[name] [server ip] [interval] [protocol] [threshold] [server port]",
-    "scripts": "./lib_timesync 203.253.128.177 1 udp 5 5005 /dev/tty/AMA0",
+    "scripts": "./lib_timesync 203.253.128.177 1 udp 5 5005",
     "data": [
         "TimeSync"
     ],
     "control": [
-        "system_time", 
+        "system_time",
         "timesync"
     ]
 }
