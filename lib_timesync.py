@@ -27,7 +27,7 @@ def on_connect(client,userdata,flags, rc):
     print('[msw_mqtt_connect] connect to ', broker_ip)
     sub_container_name = lib['control'][0]
     control_topic = '/MUV/control/' + lib['name'] + '/' + sub_container_name
-    lib_mqtt_client.subscribe(control_topic, 0) 
+    lib_mqtt_client.subscribe(control_topic, 0)
     print ('[lib]control_topic\n', control_topic)
 
     f = fifo()
@@ -58,8 +58,9 @@ def on_message(client, userdata, msg):
     mav = ardupilotmega.MAVLink(f)
 
     # Time sync message reception
+    mavMsg = bytearray.fromhex(" ".join(msg.payload[i:i + 2] for i in range(0, len(msg.payload), 2)))))
     if msg.topic == monitor.topic_timesync:
-        rx_msg = mav.parse_char(msg.payload)
+        rx_msg = mav.parse_char(mavMsg)
         if rx_msg.tc1 == 0:
             pass
         else:
@@ -68,7 +69,7 @@ def on_message(client, userdata, msg):
             else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
     else:
         # System time message reception
-        rx_msg = mav.parse_char(msg.payload)
+        rx_msg = mav.parse_char(mavMsg)
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
@@ -79,7 +80,7 @@ def on_message(client, userdata, msg):
     m.pack(mav)
     tx_msg = m.get_msgbuf()
     client.publish(monitor.topic_req, tx_msg)
-    print('Time synch is published')
+    print('Time sync is published')
 
 
 
@@ -101,7 +102,7 @@ def msw_mqtt_connect(broker_ip, port):
 
 def send_data_to_msw (data_topic, obj_data):
     global lib_mqtt_client
-    
+
     lib_mqtt_client.publish(data_topic, obj_data)
 
 
@@ -150,7 +151,7 @@ if __name__ == '__main__':
 
     # Inforamtion for time server
     monitor = Monitor()
-    
+
     '''
     예시: argv[n] = [파라미터 = default value]
     argv[1] = [서버주소 = keti 서버]
@@ -170,7 +171,7 @@ if __name__ == '__main__':
     else : monitor.threshold = int( argv[4] )
     if len(argv) < 6: monitor.server_port = '5005'
     else : monitor.server_port = argv[5]
-    
+
     # Define resource
     container_name = lib["data"][0]
     monitor.topic = '/MUV/data/' + lib["name"] + '/' + container_name
@@ -184,7 +185,7 @@ if __name__ == '__main__':
     lib_mqtt_client.subscribe(monitor.topic_systime)
     monitor_tis = MUV_TIS(monitor, lib_mqtt_client).start()
 
-    # FC thread 
+    # FC thread
     FC_thread = threading.Thread(target = monitor.rtt_measure())
     FC_thread.start()
-    
+
