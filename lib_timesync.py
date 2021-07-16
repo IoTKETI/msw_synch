@@ -68,21 +68,20 @@ def on_message(client, userdata, msg):
             rx_time = dt.timestamp(dt.now())
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
             else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
+
+            # Send timesync
+                monitor.tx_time = dt.timestamp(dt.now())
+                m = mav.timesync_encode(0, int( monitor.tx_time ))
+                m.pack(mav)
+                tx_msg = m.get_msgbuf()
+                client.publish(monitor.topic_req, tx_msg)
+                print('Time sync is published')
     else:
         # System time message reception
         rx_msg = mav.parse_char(mavMsg)
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
-
-    # Send timesync
-    monitor.tx_time = dt.timestamp(dt.now())
-    m = mav.timesync_encode(0, int( monitor.tx_time ))
-    m.pack(mav)
-    tx_msg = m.get_msgbuf()
-    client.publish(monitor.topic_req, tx_msg)
-    print('Time sync is published')
-
 
 
 def msw_mqtt_connect(broker_ip, port):
