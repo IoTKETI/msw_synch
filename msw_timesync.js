@@ -263,6 +263,8 @@ function parseDataMission(topic, str_message) {
         console.log(str_message);
 
         let topic_arr = topic.split('/');
+        console.log(topic_arr[topic_arr.length - 1]);
+        console.log(config.lib.data[0]);
         if (topic_arr[topic_arr.length - 1] === config.lib.data[0]) {
             console.log('if-', str_message);
 
