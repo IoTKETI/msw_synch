@@ -209,13 +209,13 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_fc_topic) {
                 if (msw_sub_fc_topic.hasOwnProperty(idx)) {
                     if(topic === msw_sub_fc_topic[idx]) {
-                        var ver = mavPacket.substr(0, 2);
+                        var ver = message.toString().substr(0, 2);
                         if (ver === 'fd') {
-                            var sysid = mavPacket.substr(10, 2).toLowerCase();
-                            var msgid = mavPacket.substr(14, 6).toLowerCase();
+                            var sysid = message.toString().substr(10, 2).toLowerCase();
+                            var msgid = message.toString().substr(14, 6).toLowerCase();
                         } else {
-                            sysid = mavPacket.substr(6, 2).toLowerCase();
-                            msgid = mavPacket.substr(10, 2).toLowerCase();
+                            sysid = message.toString().substr(6, 2).toLowerCase();
+                            msgid = message.toString().substr(10, 2).toLowerCase();
                         }
 
                         if ((msgid === 111) || (msgid === 2)) {
