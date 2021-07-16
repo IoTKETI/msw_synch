@@ -113,6 +113,15 @@ if __name__ == '__main__':
     my_lib_name = 'lib_timesync'
     msw_dir_name = 'msw_' + my_lib_name.split('_')[1] + '_' + 'msw_' + my_lib_name.split('_')[1]
 
+    lib = dict()
+    print('./' + msw_dir_name + '/' + my_lib_name + '.json')
+    with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
+        lib = json.load(f)
+        print(lib)
+        lib = json.loads(lib)
+        print(lib)
+
+    '''
     try:
         lib = dict()
         print('./' + msw_dir_name + '/' + my_lib_name + '.json')
@@ -136,6 +145,7 @@ if __name__ == '__main__':
         with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
+    '''
 
     broker_ip = 'localhost'
     port = 1883
