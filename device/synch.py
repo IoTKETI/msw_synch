@@ -21,6 +21,8 @@ class Monitor(Thing):
         self.protocol = 'up'
         self.interval = 5
         self.topic = []
+        self.topic_systime = ''
+        self.topic_timesync = ''
         self.name = 'Monitor'
         self.server_addr = ''
         self.server_port = ''
@@ -28,6 +30,7 @@ class Monitor(Thing):
         self.threshold = 5
         self.ct_path = ''
         self.fc_port = None
+        self.tx_time = []
         self.fc_lt = 0
         self.fc_time = 0
         self.fc_offset = 0
@@ -117,8 +120,8 @@ class Monitor(Thing):
 
 
     # Function to measure RTT of the FC link
-    def rtt_measure(self):
-        
+    def rtt_measure(self, mqtt_client):
+
         settings = {
             'DataRate'       : 2,
             'TransmitPacket' : 5,
@@ -134,50 +137,16 @@ class Monitor(Thing):
             count = tmp = fc_lt = 0
             sock = socket(AF_INET, SOCK_DGRAM)
             
+           
             try:
-                # For Ardupilot
-                self.fc_port.mav.param_set_send( self.fc_port.target_system, self.fc_port.target_component, b'BRD_RTC_TYPES',\
-                                                     settings['BRD_RTC_TYPES'], mavutil.mavlink.MAV_PARAM_TYPE_INT32 )
-            except:
-                pass
-            
-            try:
-                # Interval initialize
-                self.fc_port.mav.request_data_stream_send( self.fc_port.target_system, self.fc_port.target_system, 0, settings['DataRate'], 1 )
-
-                # Set FC time
-                while True:
-                        
-                    self.fc_port.mav.system_time_send( int(time.time() * 1e6) , 0 )
-                    msg = self.fc_port.recv_match(type='SYSTEM_TIME', blocking=True)
-                    if msg.time_unix_usec > 10: break
                     
                 start = time.time()
                 
                 initial = 0
                     
                 while True:
+                    
 
-                    # Send timesync
-                    tx_time = dt.timestamp(dt.now())
-
-                    self.fc_port.mav.timesync_send(0, int( tx_time ))
-
-                    # Time sync message reception
-                    msg = self.fc_port.recv_match(type='TIMESYNC', blocking=True)
-                    if msg.tc1 == 0:
-                        continue
-                    else:
-                        rx_time = dt.timestamp(dt.now())
-                        if self.fc_lt != 0: self.fc_lt = (self.fc_lt + (rx_time - tx_time) / 2 ) / 2
-                        else: self.fc_lt = (rx_time - tx_time) / 2 
-
-                    # System time message reception
-                    msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
-                    now = float( dt.timestamp( dt.now() ) - self.fc_port.time_since('SYSTEM_TIME') )
-                    self.fc_time = float( msg.time_unix_usec / 1e6 )
-                    self.fc_offset = int( ( (self.fc_time + self.fc_lt) - now ) * 1000 )
-                        
                     # send ms measure
                     count = count + 1
                     tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
