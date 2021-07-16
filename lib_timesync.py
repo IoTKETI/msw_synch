@@ -113,19 +113,26 @@ if __name__ == '__main__':
     my_lib_name = 'lib_timesync'
     msw_dir_name = 'msw_' + my_lib_name.split('_')[1] + '_' + 'msw_' + my_lib_name.split('_')[1]
 
-    lib = dict()
-    lib["name"] = my_lib_name
-    lib["target"] = ''
-    lib["description"] = ""
-    lib["scripts"] = ''
-    lib["data"] = ['TimeSync']
-    lib["control"] = ['']
-    lib = json.dumps(lib, indent=4)
-    lib = json.loads(lib)
+    try:
+        lib = dict()
+        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
+            lib = json.load(f)
+            lib = json.loads(lib)
 
-    with open('./'+ msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
-                json.dump(lib, json_file, indent=4)
+    except:
+        lib = dict()
+        lib["name"] = my_lib_name
+        lib["target"] = 'armv6'
+        lib["description"] = "[name] [portnum] [baudrate]"
+        lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB4 115200'
+        lib["data"] = ['AIR']
+        lib["control"] = ['Control_AIR']
+        lib = json.dumps(lib, indent=4)
+        lib = json.loads(lib)
 
+        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+            json.dump(lib, json_file, indent=4)
+            
 
     broker_ip = 'localhost'
     port = 1883
