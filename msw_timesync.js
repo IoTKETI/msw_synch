@@ -235,8 +235,6 @@ function on_receive_from_lib(topic, str_message) {
 }
 
 function on_process_fc_data(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message + '\n');
-
     let topic_arr = topic.split('/');
     //if ((topic_arr[topic_arr.length-1] === 'system_time') || (topic_arr[topic_arr.length-1] === 'timesync')) {
     try {
@@ -300,6 +298,7 @@ function parseControlMission(topic, str_message) {
 }
 
 function parseFcData(topic, str_message) {
+    console.log(topic, ' - ', str_message);
     let topic_arr = topic.split('/');
     if (topic_arr[topic_arr.length-1] === 'system_time') {
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[0]; // 'system_time'
