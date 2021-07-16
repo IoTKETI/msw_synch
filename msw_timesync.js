@@ -122,7 +122,6 @@ function runLib(obj_lib) {
 
         }
         else {
-            console.log(scripts_arr);
             scripts_arr[0] = scripts_arr[0].replace('./', '');
             scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
         }
@@ -130,7 +129,6 @@ function runLib(obj_lib) {
         // scripts_arr[0] = scripts_arr[0] + '.py';
         // scripts_arr.unshift('python3');
 
-        console.log('sudo ', scripts_arr);
         let run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
 
         run_lib.stdout.on('data', function(data) {
