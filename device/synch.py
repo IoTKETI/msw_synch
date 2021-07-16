@@ -135,6 +135,9 @@ class Monitor(Thing):
                     
         while True:
 
+            # 2hz
+            time.sleep(0.5)
+
             # send ms measure
             count = count + 1
             tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
