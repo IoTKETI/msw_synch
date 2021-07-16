@@ -54,25 +54,24 @@ def on_message(client, userdata, msg):
     global monitor
     message = str(msg.payload.decode("utf-8"))
 
+    f = fifo()
+    mav = ardupilotmega.MAVLink(f)
 
     # Time sync message reception
-    if hasattr(msg.payload, 'tc1'):
-        rx_msg = mavutil.mav.parse_char(msg.payload)
+    if msg.topic == monitor.topic_timesync:
+        rx_msg = mav.parse_char(msg.payload)
         if rx_msg.tc1 == 0:
             pass
         else:
             rx_time = dt.timestamp(dt.now())
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
-            else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2 
+            else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
     else:
         # System time message reception
-        rx_msg = mavutil.mav.parse_char(msg.payload)
+        rx_msg = mav.parse_char(msg.payload)
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
-
-    f = fifo()
-    mav = ardupilotmega.MAVLink(f)
 
     # Send timesync
     monitor.tx_time = dt.timestamp(dt.now())
@@ -168,6 +167,6 @@ if __name__ == '__main__':
 
     # FC thread
     if monitor.fc_port != None: 
-        FC_thread = threading.Thread(target = monitor.rtt_measure(lib_mqtt_client))
+        FC_thread = threading.Thread(target = monitor.rtt_measure())
         FC_thread.start()
     

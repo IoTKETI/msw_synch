@@ -121,7 +121,7 @@ class Monitor(Thing):
 
 
     # Function to measure RTT of the FC link
-    def rtt_measure(self, mqtt_client):
+    def rtt_measure(self):
 
         settings = {
             'DataRate'       : 2,
@@ -146,7 +146,6 @@ class Monitor(Thing):
                 initial = 0
                     
                 while True:
-                    
 
                     # send ms measure
                     count = count + 1
