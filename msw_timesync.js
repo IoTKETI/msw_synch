@@ -200,7 +200,7 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_lib_topic) {
                 if (msw_sub_lib_topic.hasOwnProperty(idx)) {
                     if(topic === msw_sub_lib_topic[idx]) {
-                        setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString());
+                        setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString('hex'));
                         break;
                     }
                 }
@@ -252,19 +252,10 @@ setTimeout(init, 1000);
 ///////////////////////////////////////////////////////////////////////////////
 function parseDataMission(topic, str_message) {
     try {
-        // User define Code
-//         let obj_lib_data = JSON.parse(str_message);
-//         if(fc.hasOwnProperty('global_position_int')) {
-//             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-//         }
-//         str_message = JSON.stringify(obj_lib_data);
-
-        ///////////////////////////////////////////////////////////////////////
         let topic_arr = topic.split('/');
         if (topic_arr[topic_arr.length - 1] === config.lib[0].data[0]) {
 
             let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
-            //         msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
             msw_mqtt_client.publish(data_topic, str_message);
         }
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
