@@ -111,6 +111,7 @@ if __name__ == '__main__':
     #os.system('sudo systemctl disable systemd-timesynch.service')
     os.system('sudo timedatectl set-ntp off')
     my_lib_name = 'lib_timesync'
+    msw_dir_name = 'msw_' + my_lib_name.split('_')[1] + '_' + 'msw_' + my_lib_name.split('_')[1]
 
     lib = dict()
     lib["name"] = my_lib_name
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     lib = json.dumps(lib, indent=4)
     lib = json.loads(lib)
 
-    with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+    with open('./'+ msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
                 json.dump(lib, json_file, indent=4)
 
 
