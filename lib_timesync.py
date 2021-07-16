@@ -38,7 +38,7 @@ def on_connect(client,userdata,flags, rc):
     m = mav.timesync_encode(0, int( monitor.tx_time ))
     m.pack(mav)
     tx_msg = m.get_msgbuf()
-    client.publish(monitor.topic_timesync, tx_msg)
+    client.publish(monitor.topic_req, tx_msg)
     print('Time synch is published')
 
 def on_disconnect(client, userdata, flags, rc=0):
@@ -79,7 +79,7 @@ def on_message(client, userdata, msg):
     m = mav.timesync_encode(0, int( monitor.tx_time ))
     m.pack(mav)
     tx_msg = m.get_msgbuf()
-    client.publish(monitor.topic_timesync, tx_msg)
+    client.publish(monitor.topic_req, tx_msg)
     print('Time synch is published')
 
 
@@ -156,6 +156,7 @@ if __name__ == '__main__':
     # Define resource
     container_name = lib["data"][0]
     monitor.topic = '/MUV/data/' + lib["name"] + '/' + container_name
+    monitor.topic_req = '/MUV/data/' + lib["name"] + '/' + lib["data"][1]
     monitor.topic_systime = '/MUV/control/' + lib["name"] + '/' + lib["control"][0]
     monitor.topic_timesync = '/MUV/control/' + lib["name"] + '/' + lib["control"][1]
 

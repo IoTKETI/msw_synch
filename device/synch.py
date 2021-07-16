@@ -23,6 +23,7 @@ class Monitor(Thing):
         self.topic = []
         self.topic_systime = ''
         self.topic_timesync = ''
+        self.topic_req = ''
         self.name = 'Monitor'
         self.server_addr = ''
         self.server_port = ''
