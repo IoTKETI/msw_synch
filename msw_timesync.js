@@ -292,8 +292,8 @@ function parseControlMission(topic, str_message) {
         }
         else if (topic_arr[topic_arr.length - 1] === 'Req') {
             let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
+            console.log(_topic, ' ', str_message);
             msw_mqtt_client.publish(_topic, str_message);
-            console.log('send req');
         }
 
     }
