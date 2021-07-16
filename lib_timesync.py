@@ -114,12 +114,10 @@ if __name__ == '__main__':
     msw_dir_name = 'msw_' + my_lib_name.split('_')[1] + '_' + 'msw_' + my_lib_name.split('_')[1]
 
     lib = dict()
-    print('./' + msw_dir_name + '/' + my_lib_name + '.json')
     with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
         #lib = json.load(f)
         #print(lib)
         lib = json.load(f)
-        print(lib)
 
     '''
     try:
