@@ -284,6 +284,7 @@ function parseControlMission(topic, str_message) {
     try {
         // User define Code
         ///////////////////////////////////////////////////////////////////////
+        console.log(topic, ' ', str_message);
 
         let topic_arr = topic.split('/');
         if (topic_arr[topic_arr.length - 1] === 'TimeSync') {
