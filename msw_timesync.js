@@ -268,7 +268,7 @@ function parseDataMission(topic, str_message) {
             msw_mqtt_client.publish(data_topic, str_message);
         }
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
-            console.log(str_message.toString());
+            console.log(str_message.toString('hex'));
             if (mavPort != null) {
                 if (mavPort.isOpen) {
                     mavPort.write(str_message);
