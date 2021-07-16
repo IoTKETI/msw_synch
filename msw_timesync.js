@@ -266,7 +266,9 @@ function parseDataMission(topic, str_message) {
             let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
             //         msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
             msw_mqtt_client.publish(data_topic, str_message);
-        } else if (topic_arr[topic_arr.length - 1] === config.lib.data[1]) {
+        }
+        else if (topic_arr[topic_arr.length - 1] === config.lib.data[1]) {
+            console.log(str_message);
             if (mavPort != null) {
                 if (mavPort.isOpen) {
                     mavPort.write(str_message);
@@ -287,19 +289,12 @@ function parseControlMission(topic, str_message) {
         console.log(topic, ' ', str_message);
 
         let topic_arr = topic.split('/');
-        if (topic_arr[topic_arr.length - 1] === 'TimeSync') {
-            let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
-            msw_mqtt_client.publish(_topic, str_message);
-        }
-        else if (topic_arr[topic_arr.length - 1] === 'Req') {
-            let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
-            console.log(_topic, ' ', str_message);
-            msw_mqtt_client.publish(_topic, str_message);
-        }
+        let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
+        msw_mqtt_client.publish(_topic, str_message);
 
     }
     catch (e) {
-        console.log('[parseDataMission] data format of lib is not json');
+        console.log('[parseControlMission] data format of lib is not json');
     }
 }
 
