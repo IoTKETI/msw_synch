@@ -30,12 +30,10 @@ class Monitor(Thing):
         self.trans_protocol = 'udp'
         self.threshold = 5
         self.ct_path = ''
-        self.fc_port = None
         self.tx_time = []
         self.fc_lt = 0
         self.fc_time = 0
         self.fc_offset = 0
-        self.connectionLink = ''
 
         # client path check
         if os.path.exists('./linux_client_x86'):
@@ -98,13 +96,8 @@ class Monitor(Thing):
                 received_offset = True
 
             # Check the FC connection
-            if self.fc_port == None:
-                payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-                payload['fc_offset'] = int( data_temp[2] )
-            else:
-                payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-                payload['fc_offset'] = self.fc_offset
-
+            payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+            payload['fc_offset'] = self.fc_offset
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
@@ -130,48 +123,41 @@ class Monitor(Thing):
             'BRD_RTC_TYPES'  : 3,   # GPS, MAVLINK
             'InitialPacket'  : 15,
         }
-        
-        if self.fc_port != None:
 
-            ADDR = (self.server_addr, int(self.server_port))
+        ADDR = (self.server_addr, int(self.server_port))
 
-            count = tmp = fc_lt = 0
-            sock = socket(AF_INET, SOCK_DGRAM)
-            
-           
-            try:
-                    
-                start = time.time()
+        count = tmp = fc_lt = 0
+        sock = socket(AF_INET, SOCK_DGRAM)
+
+        start = time.time()
                 
-                initial = 0
+        initial = 0
                     
-                while True:
+        while True:
 
-                    # send ms measure
-                    count = count + 1
-                    tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
-                    if count is settings['TransmitPacket']:
-                        enteredTime = time.time() - start
-                        if settings['SendTerm'] - enteredTime >= 0:
-                            time.sleep(settings['SendTerm'] - enteredTime)
+            # send ms measure
+            count = count + 1
+            tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
+            if count is settings['TransmitPacket']:
+                enteredTime = time.time() - start
+                if settings['SendTerm'] - enteredTime >= 0:
+                    time.sleep(settings['SendTerm'] - enteredTime)
                         
-                        if initial < settings['InitialPacket']:
-                            sock.sendto(str(tmp).encode(), ADDR)
-                            initial = initial + 1
+                if initial < settings['InitialPacket']:
+                    sock.sendto(str(tmp).encode(), ADDR)
+                    initial = initial + 1
                             
-                        # more than 2min companste gps time assumes gps sync problem and so this problem is ignored.
-                        elif abs(tmp) <= 120000:
-                            sock.sendto(str(tmp).encode(), ADDR)
-                        count = 0
-                        tmp = 0
+                # more than 2min companste gps time assumes gps sync problem and so this problem is ignored.
+                elif abs(tmp) <= 120000:
+                    sock.sendto(str(tmp).encode(), ADDR)
+                count = 0
+                tmp = 0
                             
-                        # startTime initialization
-                        start = time.time()
+                # startTime initialization
+                start = time.time()
+        
+           
 
-            except serial.SerialException:
-                print('{} is dead'.format(self.connectionLink))
-                self.fc_port = None
-                pass
 
         else:
             return
