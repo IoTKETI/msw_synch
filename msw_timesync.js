@@ -296,11 +296,11 @@ function parseControlMission(topic, str_message) {
 
 function parseFcData(topic, str_message) {
     let topic_arr = topic.split('/');
-    if (topic_arr[topic_arr.length-1] == 'system_time') {
+    if (topic_arr[topic_arr.length-1] === 'system_time') {
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[0]; // 'system_time'
         msw_mqtt_client.publish(_topic, str_message);
     }
-    else if (topic_arr[topic_arr.length-1] == 'timesync'){
+    else if (topic_arr[topic_arr.length-1] === 'timesync'){
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[1]; // 'timesync'
         msw_mqtt_client.publish(_topic, str_message);
     }
