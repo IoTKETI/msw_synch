@@ -58,7 +58,9 @@ def on_message(client, userdata, msg):
     mav = ardupilotmega.MAVLink(f)
 
     # Time sync message reception
+    print(msg.payload)
     mavMsg = bytearray.fromhex(" ".join(msg.payload[i:i + 2] for i in range(0, len(msg.payload), 2)))
+
     print(mavMsg)
     if msg.topic == monitor.topic_timesync:
         rx_msg = mav.parse_char(mavMsg)
