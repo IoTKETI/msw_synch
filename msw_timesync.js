@@ -268,6 +268,7 @@ function parseDataMission(topic, str_message) {
             msw_mqtt_client.publish(data_topic, str_message);
         }
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
+            console.log(str_message.toString());
             if (mavPort != null) {
                 if (mavPort.isOpen) {
                     mavPort.write(str_message);
@@ -298,7 +299,6 @@ function parseControlMission(topic, str_message) {
 }
 
 function parseFcData(topic, str_message) {
-    console.log(topic, ' - ', str_message);
     let topic_arr = topic.split('/');
     if (topic_arr[topic_arr.length-1] === 'system_time') {
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[0]; // 'system_time'
