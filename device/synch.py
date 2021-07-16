@@ -1,19 +1,16 @@
 from tis.oneM2M import *
-<<<<<<< HEAD
 from pymavlink import mavutil
 from datetime import datetime as dt
 from pytz import timezone
 import os, threading
-=======
-from datetime import datetime as dt
-from pytz import timezone
-import os
->>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
 import subprocess
 import platform
 import json
-# Warning!! In each class, one must implement only one method among get and control methods
+import time
+import serial
+from socket import *
 
+# Warning!! In each class, one must implement only one method among get and control methods
 
 # Uplink class (for time offset monitoring)
 class Monitor(Thing):
@@ -29,16 +26,12 @@ class Monitor(Thing):
         self.server_port = ''
         self.trans_protocol = 'udp'
         self.threshold = 5
-<<<<<<< HEAD
         self.ct_path = ''
         self.fc_port = None
         self.fc_lt = 0
         self.fc_time = 0
         self.fc_offset = 0
-=======
-        self.synch_process = []
-        self.ct_path = ''
->>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
+        self.connectionLink = ''
 
         # client path check
         if os.path.exists('./linux_client_x86'):
@@ -54,8 +47,6 @@ class Monitor(Thing):
                     elif os.path.exists('./' + name + '/device/linux_client_x86'):
                         self.ct_path = os.path.abspath('./' + name + '/device/linux_client_x86')
                         break
-        
-        print(self.ct_path)
 
         # OS address bit check
         (os_bit, _) = platform.architecture()
@@ -63,10 +54,11 @@ class Monitor(Thing):
             self.client_sw = self.ct_path[:-2] + '86'
         elif os_bit == '64bit':
             self.client_sw = self.ct_path[:-2] + '64'
+            
+        print(self.client_sw)
 
         # Change of ownership
         subprocess.call(['sudo', 'chmod', '777', self.client_sw])
-
 
 
     # Thing dependent get function
@@ -80,17 +72,26 @@ class Monitor(Thing):
             elif self.trans_protocol == 'udp':
                 self._protocol = 0
             
-            # Time offset calculation
-            mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
+            received_offset = False
             
-<<<<<<< HEAD
-            data_temp = mc_offset.split('+')
-            del data_temp[-1]
+            while received_offset is False:
             
-            payload = dict()
-            payload['server'] = dt.fromtimestamp( float( data_temp[0] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['mc_offset'] = int( data_temp[2] )
+                # Time offset calculation
+                mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
+                
+                data_temp = mc_offset.split('+')
+                del data_temp[-1]
+                
+                payload = dict()
+                
+                try:
+                    payload['server'] = dt.fromtimestamp( float( data_temp[0] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+                    payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+                    payload['mc_offset'] = int( data_temp[2] )
+                except IndexError:
+                    continue
+                
+                received_offset = True
 
             # Check the FC connection
             if self.fc_port == None:
@@ -100,18 +101,6 @@ class Monitor(Thing):
                 payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
                 payload['fc_offset'] = self.fc_offset
 
-=======
-            data_temp = offset.split('+')
-            del data_temp[-1]
-            print(data_temp)
-            
-            payload = dict()
-            payload['server'] = dt.fromtimestamp( float( data_temp[0] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['mc_offset'] = int( data_temp[2] )
-            payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ), ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['fc_offset'] = int( data_temp[2] )
->>>>>>> 46e7561269493999f55216bba76bb0ea26b06f31
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
@@ -130,37 +119,95 @@ class Monitor(Thing):
     # Function to measure RTT of the FC link
     def rtt_measure(self):
         
+        settings = {
+            'DataRate'       : 2,
+            'TransmitPacket' : 5,
+            'SendTerm'       : 3,
+            'BRD_RTC_TYPES'  : 3,   # GPS, MAVLINK
+            'InitialPacket'  : 15,
+        }
+        
         if self.fc_port != None:
 
-            # Interval initialize
-            self.fc_port.mav.request_data_stream_send( self.fc_port.target_system, self.fc_port.target_system, 0, 5, 1 )            
+            ADDR = (self.server_addr, int(self.server_port))
 
-            # Set FC time
-            while True:
-                self.fc_port.mav.system_time_send( int( dt.timestamp(dt.now()) * 1e6 ) , 0 )
-                msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
-                if msg.time_unix_usec > 10: break
+            count = tmp = fc_lt = 0
+            sock = socket(AF_INET, SOCK_DGRAM)
             
-            while True:
+            try:
+                # For Ardupilot
+                self.fc_port.mav.param_set_send( self.fc_port.target_system, self.fc_port.target_component, b'BRD_RTC_TYPES',\
+                                                     settings['BRD_RTC_TYPES'], mavutil.mavlink.MAV_PARAM_TYPE_INT32 )
+            except:
+                pass
+            
+            try:
+                # Interval initialize
+                self.fc_port.mav.request_data_stream_send( self.fc_port.target_system, self.fc_port.target_system, 0, settings['DataRate'], 1 )
 
-                # Send timesync
-                tx_time = dt.timestamp(dt.now())
-                self.fc_port.mav.timesync_send(0, int( tx_time ))
+                # Set FC time
+                while True:
+                        
+                    self.fc_port.mav.system_time_send( int(time.time() * 1e6) , 0 )
+                    msg = self.fc_port.recv_match(type='SYSTEM_TIME', blocking=True)
+                    if msg.time_unix_usec > 10: break
+                    
+                start = time.time()
+                
+                initial = 0
+                    
+                while True:
 
-                # Time sync message reception
-                msg = self.fc_port.recv_match(type='TIMESYNC',blocking=True)
-                if msg.tc1 == 0:
-                    continue
-                else:
-                    rx_time = dt.timestamp(dt.now())
-                    if self.fc_lt != 0: self.fc_lt = (self.fc_lt + (rx_time - tx_time) / 2 ) / 2
-                    else: self.fc_lt = (rx_time - tx_time) / 2
+                    # Send timesync
+                    tx_time = dt.timestamp(dt.now())
 
-                # System time message reception
-                msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
-                now = float( dt.timestamp( dt.now() ) )
-                self.fc_time = float( msg.time_unix_usec / 1e6 )
-                self.fc_offset = int( ( (self.fc_time + self.fc_lt) - now ) * 1000 )
+                    self.fc_port.mav.timesync_send(0, int( tx_time ))
+
+                    # Time sync message reception
+                    msg = self.fc_port.recv_match(type='TIMESYNC', blocking=True)
+                    if msg.tc1 == 0:
+                        continue
+                    else:
+                        rx_time = dt.timestamp(dt.now())
+                        if self.fc_lt != 0: self.fc_lt = (self.fc_lt + (rx_time - tx_time) / 2 ) / 2
+                        else: self.fc_lt = (rx_time - tx_time) / 2 
+
+                    # System time message reception
+                    msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
+                    now = float( dt.timestamp( dt.now() ) - self.fc_port.time_since('SYSTEM_TIME') )
+                    self.fc_time = float( msg.time_unix_usec / 1e6 )
+                    self.fc_offset = int( ( (self.fc_time + self.fc_lt) - now ) * 1000 )
+                        
+                    # send ms measure
+                    count = count + 1
+                    tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
+                    if count is settings['TransmitPacket']:
+                        enteredTime = time.time() - start
+                        if settings['SendTerm'] - enteredTime >= 0:
+                            time.sleep(settings['SendTerm'] - enteredTime)
+                        
+                        if initial < settings['InitialPacket']:
+                            sock.sendto(str(tmp).encode(), ADDR)
+                            initial = initial + 1
+                            
+                        # more than 2min companste gps time assumes gps sync problem and so this problem is ignored.
+                        elif abs(tmp) <= 120000:
+                            sock.sendto(str(tmp).encode(), ADDR)
+                        count = 0
+                        tmp = 0
+                            
+                        # startTime initialization
+                        start = time.time()
+
+            except serial.SerialException:
+                print('{} is dead'.format(self.connectionLink))
+                self.fc_port = None
+                pass
 
         else:
             return
+
+
+
+        
+        
