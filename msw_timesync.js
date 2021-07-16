@@ -239,7 +239,12 @@ function on_receive_from_lib(topic, str_message) {
 
 function on_process_fc_data(topic, str_message) {
     let topic_arr = topic.split('/');
-    fc[topic_arr[topic_arr.length-1]] = JSON.parse(str_message.toString());
+    //if ((topic_arr[topic_arr.length-1] === 'system_time') || (topic_arr[topic_arr.length-1] === 'timesync')) {
+    try {
+        fc[topic_arr[topic_arr.length-1]] = JSON.parse(str_message.toString());
+    }
+    catch (e) {
+    }
 
     parseFcData(topic, str_message);
 }
@@ -285,6 +290,18 @@ function parseControlMission(topic, str_message) {
 }
 
 function parseFcData(topic, str_message) {
+    let topic_arr = topic.split('/');
+    if (topic_arr[topic_arr.length-1] == 'system_time') {
+        let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[0]; // 'system_time'
+        msw_mqtt_client.publish(_topic, str_message);
+        console.log(str_message);
+    }
+    else if (topic_arr[topic_arr.length-1] == 'timesync'){
+        let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[1]; // 'timesync'
+        msw_mqtt_client.publish(_topic, str_message);    
+    }
+    else {
+    }
     // User define Code
     // let topic_arr = topic.split('/');
     // if(topic_arr[topic_arr.length-1] == 'global_position_int') {
