@@ -260,23 +260,17 @@ function parseDataMission(topic, str_message) {
 //         str_message = JSON.stringify(obj_lib_data);
 
         ///////////////////////////////////////////////////////////////////////
-        console.log(str_message);
-
         let topic_arr = topic.split('/');
-        console.log('len - ', topic_arr[topic_arr.length - 1]);
-        console.log(config.lib[0]);
-        console.log('data0- ', config.lib[0].data);
         if (topic_arr[topic_arr.length - 1] === config.lib[0].data[0]) {
-            console.log('if-', str_message);
 
             let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
             //         msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
             msw_mqtt_client.publish(data_topic, str_message);
         }
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
-            console.log('else if- ', str_message);
             if (mavPort != null) {
                 if (mavPort.isOpen) {
+                    console.log(str_message);
                     mavPort.write(str_message);
                 }
             }
