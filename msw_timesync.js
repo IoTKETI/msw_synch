@@ -243,7 +243,6 @@ function on_receive_from_lib(topic, str_message) {
 
 function on_process_fc_data(topic, str_message) {
     let topic_arr = topic.split('/');
-    //if ((topic_arr[topic_arr.length-1] === 'system_time') || (topic_arr[topic_arr.length-1] === 'timesync')) {
     try {
         fc[topic_arr[topic_arr.length-1]] = JSON.parse(str_message.toString());
     }
@@ -266,10 +265,9 @@ function parseDataMission(topic, str_message) {
             msw_mqtt_client.publish(data_topic, str_message);
         }
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
-            console.log(str_message.toString('hex'));
             if (mavPort != null) {
                 if (mavPort.isOpen) {
-                    mavPort.write(str_message);
+                    mavPort.write(Buffer.from(str_message, 'hex'));
                 }
             }
         }
@@ -282,14 +280,9 @@ function parseDataMission(topic, str_message) {
 
 function parseControlMission(topic, str_message) {
     try {
-        // User define Code
-        ///////////////////////////////////////////////////////////////////////
-        console.log(topic, ' ', str_message);
-
         let topic_arr = topic.split('/');
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
         msw_mqtt_client.publish(_topic, str_message);
-
     }
     catch (e) {
         console.log('[parseControlMission] data format of lib is not json');
@@ -308,11 +301,4 @@ function parseFcData(topic, str_message) {
     }
     else {
     }
-    // User define Code
-    // let topic_arr = topic.split('/');
-    // if(topic_arr[topic_arr.length-1] == 'global_position_int') {
-    //     let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[1].control[1]; // 'Req_enc'
-    //     msw_mqtt_client.publish(_topic, str_message);
-    // }
-    ///////////////////////////////////////////////////////////////////////
 }
