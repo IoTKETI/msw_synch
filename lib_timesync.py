@@ -59,7 +59,6 @@ def on_message(client, userdata, msg):
 
     # Time sync message reception
     mavMsg = bytearray.fromhex(" ".join(message[i:i + 2] for i in range(0, len(message), 2)))
-    prev_
     if msg.topic == monitor.topic_timesync:
         rx_msg = mav.parse_char(mavMsg)
         if rx_msg.tc1 == 0:
