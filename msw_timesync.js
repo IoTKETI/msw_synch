@@ -209,6 +209,18 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_fc_topic) {
                 if (msw_sub_fc_topic.hasOwnProperty(idx)) {
                     if(topic === msw_sub_fc_topic[idx]) {
+                        var ver = mavPacket.substr(0, 2);
+                        if (ver === 'fd') {
+                            var sysid = mavPacket.substr(10, 2).toLowerCase();
+                            var msgid = mavPacket.substr(14, 6).toLowerCase();
+                        } else {
+                            sysid = mavPacket.substr(6, 2).toLowerCase();
+                            msgid = mavPacket.substr(10, 2).toLowerCase();
+                        }
+
+                        if ((msgid === 111) || (msgid === 2)) {
+                            console.log(message.toString());
+                        }
                         setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString());
                         break;
                     }
@@ -270,7 +282,6 @@ function parseDataMission(topic, str_message) {
         else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
             if (mavPort != null) {
                 if (mavPort.isOpen) {
-                    console.log(str_message);
                     mavPort.write(str_message);
                 }
             }
