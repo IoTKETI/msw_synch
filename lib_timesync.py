@@ -59,7 +59,7 @@ def on_message(client, userdata, msg):
 
     # Time sync message reception
     mavMsg = bytearray.fromhex(" ".join(message[i:i + 2] for i in range(0, len(message), 2)))
-
+    prev_
     if msg.topic == monitor.topic_timesync:
         rx_msg = mav.parse_char(mavMsg)
         if rx_msg.tc1 == 0:
@@ -69,13 +69,14 @@ def on_message(client, userdata, msg):
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
             else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
 
-            # Send timesync
-            monitor.tx_time = dt.timestamp(dt.now())
-            m = mav.timesync_encode(0, int( monitor.tx_time ))
-            m.pack(mav)
-            tx_msg = m.get_msgbuf()
-            client.publish(monitor.topic_req, tx_msg)
-            print('Time sync is published')
+#             # Send timesync
+#             monitor.tx_time = dt.timestamp(dt.now())
+#             m = mav.timesync_encode(0, int( monitor.tx_time ))
+#
+#             m.pack(mav)
+#             tx_msg = m.get_msgbuf()
+#             client.publish(monitor.topic_req, tx_msg)
+#             print('Time sync is published')
     else:
         # System time message reception
         rx_msg = mav.parse_char(mavMsg)
