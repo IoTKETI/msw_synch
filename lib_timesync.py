@@ -60,7 +60,6 @@ def on_message(client, userdata, msg):
     # Time sync message reception
     mavMsg = bytearray.fromhex(" ".join(message[i:i + 2] for i in range(0, len(message), 2)))
 
-    print(mavMsg)
     if msg.topic == monitor.topic_timesync:
         rx_msg = mav.parse_char(mavMsg)
         if rx_msg.tc1 == 0:
@@ -116,21 +115,11 @@ if __name__ == '__main__':
     my_lib_name = 'lib_timesync'
     msw_dir_name = 'msw_' + my_lib_name.split('_')[1] + '_' + 'msw_' + my_lib_name.split('_')[1]
 
-    lib = dict()
-    with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
-        #lib = json.load(f)
-        #print(lib)
-        lib = json.load(f)
-
-    '''
     try:
         lib = dict()
         print('./' + msw_dir_name + '/' + my_lib_name + '.json')
         with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
-            print(lib)
-            lib = json.loads(lib)
-            print(lib)
 
     except:
         lib = dict()
@@ -146,7 +135,6 @@ if __name__ == '__main__':
         with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
-    '''
 
     broker_ip = 'localhost'
     port = 1883
