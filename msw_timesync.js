@@ -200,8 +200,15 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_lib_topic) {
                 if (msw_sub_lib_topic.hasOwnProperty(idx)) {
                     if(topic === msw_sub_lib_topic[idx]) {
-                        setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString('hex'));
-                        break;
+                        let topic_arr = topic.split('/');
+                        if (topic_arr[topic_arr.length - 1] === config.lib[0].data[0]) {
+                            setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString());
+                            break;
+                        }
+                        else if (topic_arr[topic_arr.length - 1] === config.lib[0].data[1]) {
+                            setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString('hex'));
+                            break;
+                        }
                     }
                 }
             }
