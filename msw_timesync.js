@@ -286,8 +286,16 @@ function parseControlMission(topic, str_message) {
         ///////////////////////////////////////////////////////////////////////
 
         let topic_arr = topic.split('/');
-        let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
-        msw_mqtt_client.publish(_topic, str_message);
+        if (topic_arr[topic_arr.length - 1] === 'TimeSync') {
+            let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
+            msw_mqtt_client.publish(_topic, str_message);
+        }
+        else if (topic_arr[topic_arr.length - 1] === 'Req') {
+            let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
+            msw_mqtt_client.publish(_topic, str_message);
+            console.log('send req');
+        }
+
     }
     catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
