@@ -150,11 +150,8 @@ if __name__ == '__main__':
     '''
 
     
-    if len(argv) >= 2:
-        input_par = argv
-    else:
-        input_par = argv[1].split(' ')
-
+    
+    input_par = argv[1].split(' ')
     print(input_par)
     if len(input_par) < 2: monitor.server_addr = '203.253.128.177'
     else : monitor.server_addr = input_par[0]
