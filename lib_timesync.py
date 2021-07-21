@@ -114,7 +114,7 @@ if __name__ == '__main__':
     try:
         lib = dict()
         print('./' + msw_dir_name + '/' + my_lib_name + '.json')
-        with open('./' + my_lib_name + '.json', 'r') as f:
+        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
 
     except:
