@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
             m.pack(mav)
             tx_msg = m.get_msgbuf()
             client.publish(monitor.topic_req, tx_msg)
-            print('Time sync is published')
+            print('Time sync is published22222222')
         else:
             rx_time = dt.timestamp(dt.now())
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
