@@ -149,18 +149,23 @@ if __name__ == '__main__':
     argv[5] = [동기화 port = 5005]
     '''
 
-    input_par = argv[1].split(' ')
+    
+    if len(argv) >= 2:
+        input_par = argv
+    else:
+        input_par = argv[1].split(' ')
+
     print(input_par)
     if len(input_par) < 2: monitor.server_addr = '203.253.128.177'
-    else : monitor.server_addr = input_par[1]
+    else : monitor.server_addr = input_par[0]
     if len(input_par) < 3: monitor.interval = 3   # Interval for offset report to Mobius (second)
-    else : monitor.interval = int( input_par[2] )
+    else : monitor.interval = int( input_par[1] )
     if len(input_par) < 4: monitor.trans_protocol = 'udp'
-    else : monitor.trans_protocol = input_par[3]
+    else : monitor.trans_protocol = input_par[2]
     if len(input_par) < 5: monitor.threshold = 5  # Offset threshold for synchronization (millisecond)
-    else : monitor.threshold = int( input_par[4] )
+    else : monitor.threshold = int( input_par[3] )
     if len(input_par) < 6: monitor.server_port = '5005'
-    else : monitor.server_port = input_par[5]
+    else : monitor.server_port = input_par[4]
 
     # Define resource
     container_name = lib["data"][0]
