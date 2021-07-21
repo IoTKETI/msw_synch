@@ -77,6 +77,7 @@ class Monitor(Thing):
             received_offset = False
             
             while received_offset is False:
+                print('In while')
             
                 # Time offset calculation
                 mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
