@@ -81,6 +81,7 @@ class Monitor(Thing):
             
                 # Time offset calculation
                 mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
+                print(mc_offset)
                 
                 data_temp = mc_offset.split('+')
                 del data_temp[-1]
