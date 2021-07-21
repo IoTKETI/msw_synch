@@ -62,27 +62,24 @@ def on_message(client, userdata, msg):
     if msg.topic == monitor.topic_timesync:
         rx_msg = mav.parse_char(mavMsg)
         if rx_msg.tc1 == 0:
-            pass
+            # Send timesync
+            monitor.tx_time = dt.timestamp(dt.now())
+            m = mav.timesync_encode(0, int( monitor.tx_time ))
+            m.pack(mav)
+            tx_msg = m.get_msgbuf()
+            client.publish(monitor.topic_req, tx_msg)
+            print('Time sync is published')
         else:
             rx_time = dt.timestamp(dt.now())
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
             else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
-
-#             # Send timesync
-#             monitor.tx_time = dt.timestamp(dt.now())
-#             m = mav.timesync_encode(0, int( monitor.tx_time ))
-#
-#             m.pack(mav)
-#             tx_msg = m.get_msgbuf()
-#             client.publish(monitor.topic_req, tx_msg)
-#             print('Time sync is published')
     else:
         # System time message reception
         rx_msg = mav.parse_char(mavMsg)
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
-
+        
 
 def msw_mqtt_connect(broker_ip, port):
     global lib_topic
@@ -116,22 +113,22 @@ if __name__ == '__main__':
 
     try:
         lib = dict()
-        print('./' + msw_dir_name + '/' + my_lib_name + '.json')
-        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'r') as f:
+        print('./' + my_lib_name + '.json')
+        with open('./' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
 
     except:
         lib = dict()
         lib["name"] = my_lib_name
         lib["target"] = 'armv6'
-        lib["description"] = "[name] [portnum] [baudrate]"
+        lib["description"] = "[name] [server ip] [interval] [protocol] [threshold] [server port]"
         lib["scripts"] = "./lib_timesync 203.253.128.177 1 udp 5 5005"
-        lib["data"] = ['AIR']
-        lib["control"] = ['Control_AIR']
+        lib["data"] = ["TimeSync", "Req"]
+        lib["control"] = ["system_time", "timesync"]
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
-        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+        with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
 
