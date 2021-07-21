@@ -96,6 +96,8 @@ class Monitor(Thing):
                 
                 received_offset = True
 
+            print('Out while')
+
             # Check the FC connection
             payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
             payload['fc_offset'] = self.fc_offset
