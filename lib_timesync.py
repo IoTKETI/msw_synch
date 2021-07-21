@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
             m.pack(mav)
             tx_msg = m.get_msgbuf()
             client.publish(monitor.topic_req, tx_msg)
-            print('Time sync is published22222222')
+            
         else:
             rx_time = dt.timestamp(dt.now())
             if monitor.fc_lt != 0: monitor.fc_lt = (monitor.fc_lt + (rx_time - monitor.tx_time) / 2 ) / 2
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
-        with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+        with open('./' + msw_dir_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
 
@@ -149,16 +149,18 @@ if __name__ == '__main__':
     argv[5] = [동기화 port = 5005]
     '''
 
-    if len(argv) < 2: monitor.server_addr = '1.239.197.74'
-    else : monitor.server_addr = argv[1]
-    if len(argv) < 3: monitor.interval = 3   # Interval for offset report to Mobius (second)
-    else : monitor.interval = int( argv[2] )
-    if len(argv) < 4: monitor.trans_protocol = 'udp'
-    else : monitor.trans_protocol = argv[3]
-    if len(argv) < 5: monitor.threshold = 5  # Offset threshold for synchronization (millisecond)
-    else : monitor.threshold = int( argv[4] )
-    if len(argv) < 6: monitor.server_port = '5005'
-    else : monitor.server_port = argv[5]
+    input_par = argv[1].split(' ')
+    print(input_par)
+    if len(input_par) < 2: monitor.server_addr = '203.253.128.177'
+    else : monitor.server_addr = input_par[1]
+    if len(input_par) < 3: monitor.interval = 3   # Interval for offset report to Mobius (second)
+    else : monitor.interval = int( input_par[2] )
+    if len(input_par) < 4: monitor.trans_protocol = 'udp'
+    else : monitor.trans_protocol = input_par[3]
+    if len(input_par) < 5: monitor.threshold = 5  # Offset threshold for synchronization (millisecond)
+    else : monitor.threshold = int( input_par[4] )
+    if len(input_par) < 6: monitor.server_port = '5005'
+    else : monitor.server_port = input_par[5]
 
     # Define resource
     container_name = lib["data"][0]
