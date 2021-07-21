@@ -76,11 +76,14 @@ def on_message(client, userdata, msg):
             else: monitor.fc_lt = (rx_time - monitor.tx_time) / 2
     else:
         # System time message reception
+        print('System time is received')
         rx_msg = mav.parse_char(mavMsg)
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
         print('Time calculation')
+    
+    print(rx_msg)
 
 
 def msw_mqtt_connect(broker_ip, port):
