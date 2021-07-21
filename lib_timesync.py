@@ -53,6 +53,7 @@ def on_message(client, userdata, msg):
     global missionPort
     global monitor
     message = str(msg.payload.decode("utf-8"))
+    print('[ ' + msg.topic + ' ] ' + message)
 
     f = fifo()
     mav = ardupilotmega.MAVLink(f)
@@ -79,7 +80,7 @@ def on_message(client, userdata, msg):
         now = float( dt.timestamp( dt.now() ) )
         monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
         monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
-        
+
 
 def msw_mqtt_connect(broker_ip, port):
     global lib_topic
