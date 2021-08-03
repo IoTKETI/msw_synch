@@ -10,17 +10,6 @@ global lib_topic
 global lib_mqtt_client
 global monitor_obj
 
-argv = sys.argv
-
-class fifo(object):
-    def __init__(self):
-        self.buf = []
-    def write(self, data):
-        self.buf += data
-        return len(data)
-    def read(self):
-        return self.buf.pop(0)
-
 
 def on_connect(client,userdata,flags, rc):
     global monitor
@@ -78,10 +67,14 @@ def on_message(client, userdata, msg):
         # System time message reception
         print('System time is received')
         rx_msg = mav.parse_char(mavMsg)
-        now = float( dt.timestamp( dt.now() ) )
-        monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
-        monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
-        print('Time calculation')
+        now = float( dt.timestamp( dt.now() ) )        
+        if rx_msg.time_unix_usec is not 0:
+            monitor.fc_time = float( rx_msg.time_unix_usec / 1e6 )
+            monitor.fc_offset = int( ( (monitor.fc_time + monitor.fc_lt) - now ) * 1000 )
+            print('Time calculation')
+        else:
+            monitor.fc_time = 0
+            monitor.fc_offset = 0
     
     print(rx_msg)
 
@@ -108,8 +101,9 @@ def send_data_to_msw (data_topic, obj_data):
     lib_mqtt_client.publish(data_topic, obj_data)
 
 
-
 if __name__ == '__main__':
+    
+    time.sleep(10)
 
     #os.system('sudo systemctl disable systemd-timesynch.service')
     os.system('sudo timedatectl set-ntp off')
@@ -127,7 +121,7 @@ if __name__ == '__main__':
         lib["name"] = my_lib_name
         lib["target"] = 'armv6'
         lib["description"] = "[name] [server ip] [interval] [protocol] [threshold] [server port]"
-        lib["scripts"] = "./lib_timesync 203.253.128.177 1 udp 5 5005"
+        lib["scripts"] = "./lib_timesync 1.239.197.74 5 udp 5 5005"
         lib["data"] = ["TimeSync", "Req"]
         lib["control"] = ["system_time", "timesync"]
         lib = json.dumps(lib, indent=4)
@@ -151,10 +145,14 @@ if __name__ == '__main__':
     argv[4] = [동기화 문턱 값 = 5ms]
     argv[5] = [동기화 port = 5005]
     '''
+    # parsing input parameters
+    argv = sys.argv
+    if len(argv) > 2: 
+        input_par = argv
+        del input_par[0]
+    else:
+        input_par = argv[1].split(' ')
 
-    
-    
-    input_par = argv[1].split(' ')
     print(input_par)
     if len(input_par) < 2: monitor.server_addr = '203.253.128.177'
     else : monitor.server_addr = input_par[0]
@@ -166,6 +164,7 @@ if __name__ == '__main__':
     else : monitor.threshold = int( input_par[3] )
     if len(input_par) < 6: monitor.server_port = '5005'
     else : monitor.server_port = input_par[4]
+    
 
     # Define resource
     container_name = lib["data"][0]
@@ -180,7 +179,4 @@ if __name__ == '__main__':
     lib_mqtt_client.subscribe(monitor.topic_systime)
     monitor_tis = MUV_TIS(monitor, lib_mqtt_client).start()
 
-    # FC thread
-    FC_thread = threading.Thread(target = monitor.rtt_measure())
-    FC_thread.start()
-
+    

@@ -1,7 +1,6 @@
 from tis.core_thread import *
 import json
 
-
 # OneM2M TIS class for devices
 class TIS(Thread):
     
@@ -11,7 +10,6 @@ class TIS(Thread):
         self.thing = thing
         self.sc = sc
         self.rf_sc = rf_sc
-        
         
     def run(self):
         # ================== communication and routine ======================
@@ -67,11 +65,14 @@ class MUV_TIS(Thread):
             
             # Start all threads and sleep repeatedly
             for thr in threads: thr.start()
+            
+            # FC thread
+            FC_thread = threading.Thread(target = self.thing.rtt_measure(thr, self.sc))
+            FC_thread.start()
                             
         except KeyboardInterrupt:
             self.sc.close()
-
-
+            
 
 # OneM2M TIS class for gateways
 class TIS_G(Thread):

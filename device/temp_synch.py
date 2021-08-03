@@ -1,7 +1,5 @@
 from tis.oneM2M import *
 from pymavlink import mavutil
-import paho.mqtt.client as mqtt
-from pymavlink.dialects.v10 import ardupilotmega
 from datetime import datetime as dt
 from pytz import timezone
 import os, threading
@@ -11,15 +9,6 @@ import json
 import time
 import serial
 from socket import *
-
-class fifo(object):
-    def __init__(self):
-        self.buf = []
-    def write(self, data):
-        self.buf += data
-        return len(data)
-    def read(self):
-        return self.buf.pop(0)
 
 # Warning!! In each class, one must implement only one method among get and control methods
 
@@ -32,19 +21,17 @@ class Monitor(Thing):
         self.protocol = 'up'
         self.interval = 5
         self.topic = []
-        self.topic_systime = ''
-        self.topic_timesync = ''
-        self.topic_req = ''
         self.name = 'Monitor'
         self.server_addr = ''
         self.server_port = ''
         self.trans_protocol = 'udp'
         self.threshold = 5
         self.ct_path = ''
-        self.tx_time = []
+        self.fc_port = None
         self.fc_lt = 0
         self.fc_time = 0
         self.fc_offset = 0
+        self.connectionLink = ''
 
         # client path check
         if os.path.exists('./linux_client_x86'):
@@ -85,37 +72,41 @@ class Monitor(Thing):
             elif self.trans_protocol == 'udp':
                 self._protocol = 0
             
-            payload = dict()
+            received_offset = False
             
-            Index = True
-            while Index:
+            while received_offset is False:
+            
                 # Time offset calculation
                 mc_offset = subprocess.getoutput( self.client_sw + ' 3 ' + self.server_addr + ' ' + self.server_port + ' ' + str(self._protocol) )
-                    
+                
                 data_temp = mc_offset.split('+')
                 del data_temp[-1]
+                
+                payload = dict()
                 
                 try:
                     payload['server'] = dt.fromtimestamp( float( data_temp[0] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
                     payload['mc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
                     payload['mc_offset'] = int( data_temp[2] )
-                    Index = False
                 except IndexError:
-                    time.sleep(3)
-                    continue 
+                    continue
+                
+                received_offset = True
 
             # Check the FC connection
-            if self.fc_offset == 0:
-                payload['fc_time'] = payload['mc_time']
+            if self.fc_port == None:
+                payload['fc_time'] = dt.fromtimestamp( float( data_temp[1] ) ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
+                payload['fc_offset'] = int( data_temp[2] )
             else:
                 payload['fc_time'] = dt.fromtimestamp( self.fc_time ).astimezone(timezone('Asia/Seoul')).strftime('%Y%m%dT%H%M%S%f')[:-3]
-            payload['fc_offset'] = self.fc_offset
+                payload['fc_offset'] = self.fc_offset
+
             payload = json.dumps(payload, indent=4)
 
             # Time offset check
             if abs(float(data_temp[2])) > float(self.threshold):
                 # Excute synchronizer
-                subprocess.call(['sudo', self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                subprocess.call([self.client_sw, '1', self.server_addr, self.server_port, str(self._protocol), str(self.threshold)], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
                 print('Synchronizer is executed')
 
             # Return the calculated time offset
@@ -126,69 +117,92 @@ class Monitor(Thing):
 
 
     # Function to measure RTT of the FC link
-    def rtt_measure(self, muv_tis, sc):
-
+    def rtt_measure(self):
+        
         settings = {
-            'SendTerm'       : 4,
-            'InitialPacket'  : 15,
+            'DataRate'       : 2,
             'TransmitPacket' : 5,
-            'Hz'             : 0.6,
+            'SendTerm'       : 3,
+            'BRD_RTC_TYPES'  : 3,   # GPS, MAVLINK
+            'InitialPacket'  : 15,
         }
         
-        f = fifo()
-        mav = ardupilotmega.MAVLink(f)
+        if self.fc_port != None:
 
-        ADDR = (self.server_addr, int(self.server_port))
+            ADDR = (self.server_addr, int(self.server_port))
 
-        count = tmp = 0
-        sock = socket(AF_INET, SOCK_DGRAM)
-
-        start = time.time()
-                
-        initial = 0
-                    
-        while True:
+            count = tmp = fc_lt = 0
+            sock = socket(AF_INET, SOCK_DGRAM)
             
             try:
-                # 2hz
-                time.sleep(settings['Hz'])
-                    
-                # Send timesync
-                self.tx_time = dt.timestamp(dt.now())
-                m = mav.timesync_encode(0, int( self.tx_time ))
-                m.pack(mav)
-                tx_msg = m.get_msgbuf()
-                sc.publish(self.topic_req, tx_msg)
-                # print('Time synch is published')
+                # For Ardupilot
+                self.fc_port.mav.param_set_send( self.fc_port.target_system, self.fc_port.target_component, b'BRD_RTC_TYPES',\
+                                                     settings['BRD_RTC_TYPES'], mavutil.mavlink.MAV_PARAM_TYPE_INT32 )
+            except:
+                pass
+            
+            try:
+                # Interval initialize
+                self.fc_port.mav.request_data_stream_send( self.fc_port.target_system, self.fc_port.target_system, 0, settings['DataRate'], 1 )
 
-                # send ms measure
-                count = count + 1
-                tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
-                
-                if count is settings['TransmitPacket']:
-                    enteredTime = time.time() - start
-                    if settings['SendTerm'] - enteredTime >= 0:
-                        time.sleep(settings['SendTerm'] - enteredTime)
+                # Set FC time
+                while True:
+                        
+                    self.fc_port.mav.system_time_send( int(time.time() * 1e6) , 0 )
+                    msg = self.fc_port.recv_match(type='SYSTEM_TIME', blocking=True)
+                    if msg.time_unix_usec > 10: break
                     
-                    if tmp is not 0:
+                start = time.time()
+                
+                initial = 0
+                    
+                while True:
+
+                    # Send timesync
+                    tx_time = dt.timestamp(dt.now())
+
+                    self.fc_port.mav.timesync_send(0, int( tx_time ))
+
+                    # Time sync message reception
+                    msg = self.fc_port.recv_match(type='TIMESYNC', blocking=True)
+                    if msg.tc1 == 0:
+                        continue
+                    else:
+                        rx_time = dt.timestamp(dt.now())
+                        if self.fc_lt != 0: self.fc_lt = (self.fc_lt + (rx_time - tx_time) / 2 ) / 2
+                        else: self.fc_lt = (rx_time - tx_time) / 2 
+
+                    # System time message reception
+                    msg = self.fc_port.recv_match(type='SYSTEM_TIME',blocking=True)
+                    now = float( dt.timestamp( dt.now() ) - self.fc_port.time_since('SYSTEM_TIME') )
+                    self.fc_time = float( msg.time_unix_usec / 1e6 )
+                    self.fc_offset = int( ( (self.fc_time + self.fc_lt) - now ) * 1000 )
+                        
+                    # send ms measure
+                    count = count + 1
+                    tmp = tmp + (self.fc_offset / settings['TransmitPacket'])
+                    if count is settings['TransmitPacket']:
+                        enteredTime = time.time() - start
+                        if settings['SendTerm'] - enteredTime >= 0:
+                            time.sleep(settings['SendTerm'] - enteredTime)
+                        
                         if initial < settings['InitialPacket']:
                             sock.sendto(str(tmp).encode(), ADDR)
                             initial = initial + 1
-                                
+                            
                         # more than 2min companste gps time assumes gps sync problem and so this problem is ignored.
                         elif abs(tmp) <= 120000:
                             sock.sendto(str(tmp).encode(), ADDR)
-                    
-                    count = 0
-                    tmp = 0
-                                
-                    # startTime initialization
-                    start = time.time()
-            
-            except KeyboardInterrupt:
-                muv_tis.join()
-                sc.close()
-                return 0
+                        count = 0
+                        tmp = 0
+                            
+                        # startTime initialization
+                        start = time.time()
 
-        
-        
+            except serial.SerialException:
+                print('{} is dead'.format(self.connectionLink))
+                self.fc_port = None
+                pass
+
+        else:
+            return

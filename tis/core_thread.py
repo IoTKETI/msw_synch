@@ -1,6 +1,6 @@
 from select import *
 from threading import *
-import time
+import time, threading
 
 
 
@@ -58,6 +58,7 @@ class MUV_up(Thread):
     def run(self):
         # Data transmission
         while True:
+            
             try:
                 
                 if len(self.topic) == 0:
@@ -74,14 +75,14 @@ class MUV_up(Thread):
                 payload = self.thing.read(self.topic)
                 print(payload)
                 self.rf_sc.publish(self.thing.topic, payload)
-                print('Successfully published')
+                # print('Successfully published')
                     
             except KeyboardInterrupt:
                 self.rf_sc.close()
         
 
 
-# Client downlink thread
+# Client downlink threadN
 class Client_down(Thread):
     
     def __init__(self, rf_sc, thing):
