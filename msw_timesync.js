@@ -107,7 +107,7 @@ function runLib(obj_lib) {
         }
         else {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
-            scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
+            scripts_arr[0] = './' + scripts_arr[0];
         }
 
         let run_lib = spawn('sudo', [scripts_arr[0], scripts_arr.slice(1)]);
