@@ -105,10 +105,10 @@ function runLib(obj_lib) {
 
         } else {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
-            scripts_arr[0] = './' + scripts_arr[0];
+            scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
         }
-        console.log('sudo', [scripts_arr[0], scripts_arr.slice(1)])
-        let run_lib = spawn('sudo', [scripts_arr[0], scripts_arr.slice(1)]);
+
+        let run_lib = spawn('sudo', [scripts_arr[0], scripts_arr.slice(1)], {cwd: '/home/pi/nCube-TELE/'});
         // let run_lib = spawn('sudo', ['python3', scripts_arr[0] + '.py', scripts_arr.slice(1)]);
 
         run_lib.stdout.on('data', function (data) {
